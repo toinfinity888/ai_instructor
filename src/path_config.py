@@ -1,0 +1,29 @@
+from pathlib import Path
+
+from dotenv import load_dotenv
+from src.logging.logger import logger
+
+# Load environment variables from .env file if it exists
+load_dotenv()
+
+# Paths
+PROJ_ROOT = Path(__file__).resolve().parents[1]
+logger.info(f"PROJ_ROOT path is: {PROJ_ROOT}")
+
+DATA_DIR = PROJ_ROOT / "data"
+RAW_DATA_DIR = DATA_DIR / "raw"
+INTERIM_DATA_DIR = DATA_DIR / "interim"
+PROCESSED_DATA_DIR = DATA_DIR / "processed"
+EXTERNAL_DATA_DIR = DATA_DIR / "external"
+
+MODELS_DIR = PROJ_ROOT / "models"
+
+REPORTS_DIR = PROJ_ROOT / "reports"
+FIGURES_DIR = REPORTS_DIR / "figures"
+
+SRC_DIR = PROJ_ROOT / "src"
+SERVICES_DIR = SRC_DIR / "services"
+INGESTION_DIR = SERVICES_DIR / "ingestion"
+FAQ_SCRAPPER_DIR = INGESTION_DIR / "faq_scrapper"
+SCRAPPED_DATA = FAQ_SCRAPPER_DIR / "data"
+SCRAPPED_PDF = SCRAPPED_DATA / "pdfs"
