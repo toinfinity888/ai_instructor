@@ -131,3 +131,28 @@ def extract_and_save_chunks():
 
     save_chunks_to_json(chunks, output_path_json)
     print(f"✅ Extracted {len(chunks)} chunks and saved to {output_path_json}")
+
+# Cleaning JSON =================================================================
+
+def json_cleaning(path: Path):
+    for file in path.glob('*.json'):
+        with open(file, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+
+        cleaning_data = []
+        for entry in data:
+            if 'posts' in entry and 'answer' in entry['posts'] and not entry['posts']['answer']:
+                continue
+
+            if 'content' in entry:
+                entry['content'] = entry['content'].replace('\t', '')
+
+            cleaning_data.append(entry)
+
+        with open(file, 'w', encoding='utf-8') as f:
+            json.dump(cleaning_data, f, ensure_ascii=False, indent=2)
+
+def json_cleaning_run():
+    path = SCRAPPED_DATA
+    json_cleaning(path)
+           
