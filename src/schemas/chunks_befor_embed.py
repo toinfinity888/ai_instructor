@@ -6,7 +6,8 @@ import hashlib
 class ChunksBeforeEmbed(BaseModel):
     id: str
     section: str
-    subsection: str
+    subsection: Optional[str]
+    question: Optional[str]
     content: Optional[str] = None
     url: str
     filename: Optional[str]
