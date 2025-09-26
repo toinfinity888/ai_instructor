@@ -6,15 +6,15 @@ import hashlib
 class ChunksBeforeEmbed(BaseModel):
     id: str
     section: str
-    subsection: Optional[str]
-    question: Optional[str]
+    subsection: Optional[str] = None
+    question: Optional[str] = None
     content: Optional[str] = None
     url: str
-    filename: Optional[str]
-    page: Optional[int]
+    filename: Optional[str] = None
+    page: Optional[int] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     content_hash: Optional[str] = None
-    file_type: Optional[str]
+    file_type: Optional[str] = None
     
     def update_content_hash(self):
         if self.content:
@@ -26,3 +26,4 @@ class ChunksBeforeEmbed(BaseModel):
         if not v and (content := values.get('content')):
             return hashlib.sha256(content.encode()).hexdigest()
         return v
+    

@@ -5,8 +5,28 @@ from src.path_config import SCRAPPED_PDF, SCRAPPED_DATA
 from src.schemas.chunks_befor_embed import ChunksBeforeEmbed
 from typing import List
 import json
+from collections import Counter
 
-def extract_top_header(page):
+def define_zize_of_text_in_paragraph(file) -> int:
+    doc = fitz.open(file)
+    all_sizes = []
+    for page_index, page in enumerate(doc):
+        blocks = page.get_text('dict')['blocks']
+
+        for block in blocks:
+            if 'lines' in block:
+                for line in block['lines']:
+                    for span in line['spans']:
+                        size = span['size']
+
+                        all_sizes.append(size)
+
+    counter = Counter(all_sizes)
+    most_common_num, _ = counter.most_common(1)[0]
+    return most_common_num
+    
+
+def extract_top_header(page, size_of_the_main_text):
     blocks = page.get_text('dict')['blocks']
     top_text = ''
     min_y = float('inf')
@@ -16,7 +36,7 @@ def extract_top_header(page):
                 y = span['bbox'][1]
                 size = span['size']
                 text = span['text'].strip()
-                if y < min_y and len(text) > 2 and size < 110:
+                if y < min_y and len(text) > 2 and size > size_of_the_main_text:
                     min_y = y
                     top_text = text
     return top_text
@@ -47,6 +67,8 @@ def get_chunks_from_pdf(pdf_folder_path: Path) -> List[ChunksBeforeEmbed]:
 
     try:
         for file in pdf_folder_path.glob('*.pdf'):
+            size_of_the_main_text = define_zize_of_text_in_paragraph(file)
+
             doc = fitz.open(file)
             name = file.name
             url = str(file)
@@ -61,7 +83,7 @@ def get_chunks_from_pdf(pdf_folder_path: Path) -> List[ChunksBeforeEmbed]:
                 if is_toc_page(page):
                     continue
 
-                current_section = extract_top_header(page)
+                current_section = extract_top_header(page, size_of_the_main_text)
                 current_section = current_section.strip().replace('\t', '')
 
                 blocks = page.get_text('dict')['blocks']
@@ -79,7 +101,7 @@ def get_chunks_from_pdf(pdf_folder_path: Path) -> List[ChunksBeforeEmbed]:
 
                         text_line = " ".join(span['text'] for span in spans_filtered).strip()
                         text_line.replace('\t', '')
-                        is_title = any(span['size'] > 14 for span in spans_filtered)
+                        is_title = any(span['size'] > size_of_the_main_text for span in spans_filtered)
                         
 
                         if is_title:
@@ -125,10 +147,10 @@ def save_chunks_to_json(chunks: List[ChunksBeforeEmbed], output_path: Path):
 
 
 def extract_and_save_chunks():
-    path: Path = SCRAPPED_PDF
+    #path: Path = SCRAPPED_PDF
+    path = Path('/Users/saraevsviatoslav/Documents/ai_instructor/src/services/ingestion/faq_scrapper/data/pdf_for_knoledge_graph')
     chunks = get_chunks_from_pdf(path)
-    output_path_json = SCRAPPED_DATA / 'pdf_chunks.json'
-
+    output_path_json = SCRAPPED_DATA / 'pdf_chunks_bike.json'
     save_chunks_to_json(chunks, output_path_json)
     print(f"✅ Extracted {len(chunks)} chunks and saved to {output_path_json}")
 
@@ -155,4 +177,12 @@ def json_cleaning(path: Path):
 def json_cleaning_run():
     path = SCRAPPED_DATA
     json_cleaning(path)
+
+
+
+def size_test():
+    path = Path('/Users/saraevsviatoslav/Documents/ai_instructor/src/services/ingestion/faq_scrapper/data/pdf_for_knoledge_graph')
+    for file in path.glob('*.pdf'):
+        define_zize_of_text_in_paragraph(file)
+        break
            
